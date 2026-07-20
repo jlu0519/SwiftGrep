@@ -19,15 +19,18 @@ int main(int argc, char* argv[])
     }
 
     std::string line;
+    int lineNumber = 1;
 
     // Condition checks if a line was successfully read.
     // Only saving one line at a time to handle large files the same as smaller files.
     while(std::getline(file,line)) {
-        // Returns line if Searched text is found
+        // Outputs line if Searched text is found
         if(line.find(searchTxt) != std::string::npos)
         {
-            std::cout << line << "\n";
+            std::cout <<userFile << ":" << lineNumber << ":" << line << "\n";
         }
+
+        lineNumber++;
     }
 
     file.close();
