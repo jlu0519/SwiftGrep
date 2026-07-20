@@ -2,19 +2,12 @@
 #include <fstream>
 #include <string>
 
-int main()
+
+int main(int argc, char* argv[])
 {
     // Store user-provided file path and search pattern
-    std::string userFile;
-    std::string searchTxt;
-
-    std::cout << "Enter a filename to search!\n";
-
-    std::getline(std::cin, userFile);
-
-    std::cout << "Enter a Text pattern to search!\n";
-
-    std::getline(std::cin, searchTxt);
+    std::string userFile = argv[1]; 
+    std::string searchTxt = argv[2];
 
     // Open file using the stream constructor
     std::ifstream file(userFile);
