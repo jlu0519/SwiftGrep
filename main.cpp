@@ -42,7 +42,12 @@ int main(int argc, char* argv[])
 
     std::string line;
     int lineNumber = 1;
-    std::string searchTxtLower= lower(searchTxt);
+
+    if(flag == "-i")
+    {
+    searchTxt = lower(searchTxt);
+    }
+    
 
     // Condition checks if a line was successfully read.
     // Only saving one line at a time to handle large files the same as smaller files.
