@@ -39,10 +39,11 @@ int main(int argc, char* argv[])
         std::cerr << "Error opening file!" << std::endl;
         return 2;
     }
-
+    
     std::string line;
     int lineNumber = 1;
 
+    // Convert the search text oncd for case-insenstive searches
     if(flag == "-i")
     {
     searchTxt = lower(searchTxt);
@@ -54,26 +55,26 @@ int main(int argc, char* argv[])
 
     while(std::getline(file,line))
     {
-        // Case insenstive search option
         if(flag == "-i")
         {
-            std::string lineLower = lower(line);
+            std::string lowercaseLine = lower(line);
 
-            if(lineLower.find(searchTxtLower) != std::string::npos)
+            if(lowercaseLine.find(searchTxt) != std::string::npos)
             {
-            std::cout << userFile << ":" << lineNumber << ":" << line << "\n";
+                std::cout << userFile << ":" << lineNumber << ":" << line << "\n";
             }
         }
         else
         {
             if(line.find(searchTxt) != std::string::npos)
             {
-                std::cout << userFile << ":" << lineNumber << ":" << line << "\n";
+                std::cout << userFile << ":" << lineNumber << ":" << line << "\n";\
             }
         }
-        lineNumber++;
-    }
 
+        lineNumber++;
+
+    }
 
     return 0;
 }
