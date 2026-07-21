@@ -3,13 +3,47 @@
 #include <string>
 #include <algorithm>
 
-// Converts string to lower case - Used in case insenstive search.
+// Converts string to lower case - Used in case-insensitive search.
 std::string lower(const std::string& str)
 {
     std::string lowercaseText;
     std::transform(str.begin(),str.end(),std::back_inserter(lowercaseText), tolower);         
     return lowercaseText;
 }
+
+void search(const std::string& fileName, std::ifstream& file, const std::string& txt, const std::string& flag)
+{
+    int lineNumber = 1;
+    std::string line;
+    std::string searchTxt = txt;
+
+    if(flag == "-i")
+    {
+        searchTxt = lower(searchTxt);
+    }
+
+    while(std::getline(file,line))
+    {
+        if(flag == "-i")
+        {
+            std::string lowercaseLine = lower(line);
+
+            if(lowercaseLine.find(searchTxt) != std::string::npos)
+            {
+                std::cout << fileName << ":" << lineNumber << ":" << line << "\n";
+            }
+        }
+        else
+        {
+            if(line.find(searchTxt) != std::string::npos)
+            {
+                std::cout << fileName << ":" << lineNumber << ":" << line << "\n";
+            }
+        }
+        lineNumber++;
+    }
+}
+
 
 int main(int argc, char* argv[])
 {
@@ -28,7 +62,6 @@ int main(int argc, char* argv[])
     {
         flag = argv[3];
     }
-    
 
     // Open file using the stream constructor
     std::ifstream file(userFile);
@@ -39,42 +72,9 @@ int main(int argc, char* argv[])
         std::cerr << "Error opening file!" << std::endl;
         return 2;
     }
-    
-    std::string line;
-    int lineNumber = 1;
-
-    // Convert the search text oncd for case-insenstive searches
-    if(flag == "-i")
-    {
-    searchTxt = lower(searchTxt);
-    }
-    
-
-    // Condition checks if a line was successfully read.
-    // Only saving one line at a time to handle large files the same as smaller files.
-
-    while(std::getline(file,line))
-    {
-        if(flag == "-i")
-        {
-            std::string lowercaseLine = lower(line);
-
-            if(lowercaseLine.find(searchTxt) != std::string::npos)
-            {
-                std::cout << userFile << ":" << lineNumber << ":" << line << "\n";
-            }
-        }
-        else
-        {
-            if(line.find(searchTxt) != std::string::npos)
-            {
-                std::cout << userFile << ":" << lineNumber << ":" << line << "\n";\
-            }
-        }
-
-        lineNumber++;
-
-    }
+   
+    search(userFile, file, searchTxt, flag);
 
     return 0;
 }
+
