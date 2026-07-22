@@ -4,6 +4,44 @@
 #include <algorithm>
 #include <vector>
 
+struct set_flags(std::vector<std::string> flags)
+{
+    struct setFlags
+    {
+        bool caseInsensitive {false};
+        bool invertMatch {false};
+        bool countOnly {false};
+        bool lineNumbers {false};
+        bool showFile {false};
+    };
+
+    for(const auto& flag : flags)
+    {
+        if(flag == "-i")
+        {
+            caseInsenstive = true;
+        }
+        if(flag == "-v")
+        {
+            invertMatch = true;
+        }
+        if(flag == "-c")
+        {
+            countOnly = true;
+        }
+        if(flag == "-l")
+        {
+            lineNumbers = true;
+        }
+        if(flag == "-f")
+        {
+            showFile = true;
+        }
+    }
+
+    return setFlags;
+}
+
 // Converts string to lower case - Used in case-insensitive search.
 std::string lower(const std::string& str)
 {
@@ -12,14 +50,12 @@ std::string lower(const std::string& str)
     return lowercaseText;
 }
 
-void search(const std::string& fileName, std::ifstream& file, const std::string& txt, bool caseInsensitive,
-        bool invertMatch, bool countOnly, bool lineNumbers, bool showFile)
+void search(const std::string& fileName, std::ifstream& file, const std::string& txt, struct setFlags)
 {
     int lineNumber = 1;
     int countOfLineMatches{};
     std::string line;
     std::string searchTxt = txt;
-    
 
     if(caseInsensitive)
     {
@@ -86,125 +122,37 @@ int main(int argc, char* argv[])
 {
     std::vector<std::string> commandArguments;  
     std::vector<std::string> userFiles; 
+    std::vector<std::string> flags;
     std::string searchTxt = "";
 
-    // Flags / Options
-    bool caseInsensitive {false};
-    bool invertMatch {false};
-    bool countOnly {false};
-    bool lineNumbers {false};
-    bool showFile {false};
-
+    int flagCount {};
+    
     for(int i = 0; i < argc; ++i)
     {
-       commandArguments.push_back(argv[i]);
+        commandArguments.push_back(argv[i]);
+
+        if(commandArguments[i].front() == "-")
+        {
+            flags.push_back(commandArgument[i]);
+            flagCount++;
+        }
     }
-    
+
     if(argc <= 1)
     {
         std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
         return 1;
     }
 
-    // Verify that both the file path and search pattern were provided
-    // Store user-provided file path and search pattern
-    if(commandArguments[1] == "-i") 
+
+    searchTxt = commandArguments[flagCount];
+
+    // Setting flags 
+    struct chosenflags = set_flags(flags);
+
+    for(int i = ++flagCount; i < argc; ++i)
     {
-        if(argc >= 4)
-        {
-            caseInsensitive = true;
-            searchTxt = commandArguments[2];
-            for(int i = 3; i < argc; ++i)
-            {
-                userFiles.push_back(commandArguments[i]);
-            } 
-        }
-        else
-        {
-            std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
-            return 1;
-        }
-    }
-    else if(commandArguments[1] == "-v") 
-    {
-        if(argc >= 4)
-        {
-            invertMatch = true;
-            searchTxt = commandArguments[2];
-            for(int i = 3; i < argc; ++i)
-            {
-                userFiles.push_back(commandArguments[i]);
-            } 
-        }
-        else
-        {
-            std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
-            return 1;
-        }
-    }
-    else if(commandArguments[1] == "-c") 
-    {
-        if(argc >= 4)
-        {
-            countOnly = true;
-            searchTxt = commandArguments[2];
-            for(int i = 3; i < argc; ++i)
-            {
-                userFiles.push_back(commandArguments[i]);
-            } 
-        }
-        else
-        {
-            std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
-            return 1;
-        }
-    }
-    else if(commandArguments[1] == "-l") 
-    {
-        if(argc >= 4)
-        {
-            lineNumbers = true;
-            searchTxt = commandArguments[2];
-            for(int i = 3; i < argc; ++i)
-            {
-                userFiles.push_back(commandArguments[i]);
-            } 
-        }
-        else
-        {
-            std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
-            return 1;
-        }
-    }
-    else if(commandArguments[1] == "-f") 
-    {
-        if(argc >= 4)
-        {
-            showFile = true;
-            searchTxt = commandArguments[2];
-            for(int i = 3; i < argc; ++i)
-            {
-                userFiles.push_back(commandArguments[i]);
-            } 
-        }
-        else
-        {
-            std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
-            return 1;
-        }
-    }
-    else if(argc <= 2)
-    {
-        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
-        return 1;
-    }
-    else
-    {
-        searchTxt = commandArguments[1];
-        for(int i = 2; i < argc; ++i)
-        {
-            userFiles.push_back(commandArguments[i]);
-        } 
+        userFiles.push_back(commandArguments[i];    
     }
 
     for(const auto& fileName : userFiles)
@@ -219,7 +167,8 @@ int main(int argc, char* argv[])
             continue;
         }
         
-        search(fileName, file, searchTxt, caseInsensitive, invertMatch, countOnly, lineNumbers, showFile);
+        // Search
+        search(fileName, file, searchTxt, chosenFlags);
 
     }
 
