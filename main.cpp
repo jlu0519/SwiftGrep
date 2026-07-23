@@ -3,6 +3,7 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <cctype>
 
 struct SetFlags
 {
@@ -17,7 +18,18 @@ struct SetFlags
 std::string lower(const std::string& str)
 {
     std::string lowercaseText;
-    std::transform(str.begin(),str.end(),std::back_inserter(lowercaseText), tolower);         
+    std::transform(
+        str.begin(),
+        str.end(),
+        std::back_inserter(lowercaseText),
+        [](char character)
+        {
+            return static_cast<char>(
+                std::tolower(static_cast<unsigned char>(character))
+            );
+        }
+    );
+
     return lowercaseText;
 }
 
