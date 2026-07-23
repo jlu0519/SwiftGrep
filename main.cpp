@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <vector>
 #include <cctype>
+#include <iterator>
 
 struct SetFlags
 {
@@ -118,16 +119,24 @@ int main(int argc, char* argv[])
 {
     std::vector<std::string> commandArguments;  
     std::vector<std::string> userFiles; 
-    std::string searchTxt = "";
+    std::string searchTxt;
     int searchTxtIndex {};
     int fileStartIndex {};
     int flagCount {};
     SetFlags userFlags;
+    bool endOfOptions{false};
     
     // Convert command-line arguments to strings for easier processing. 
     for(int i = 0; i < argc; ++i)
     {
         commandArguments.push_back(argv[i]);
+    }
+    
+    // Input validation
+    if(argc <= 1)
+    {
+        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
+        return 1;
     }
 
     // Parse consecutive flags at the beginning of the command.
@@ -153,6 +162,12 @@ int main(int argc, char* argv[])
         {
             userFlags.showFile = true;
         }
+        else if(commandArguments[i] == "--")
+        {
+            ++flagCount;
+            exceptionFlag = true;
+            break;
+        }
         // Stop parsing when the first non-flag argument is reached.
         else
         {
@@ -161,18 +176,14 @@ int main(int argc, char* argv[])
 
         ++flagCount;
     }
-        
+    
+
     // Determine the positions of the search text and first filename
     searchTxtIndex = flagCount + 1;
     fileStartIndex = searchTxtIndex + 1;
 
     // Input validation  
-    if(argc <= 1)
-    {
-        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
-        return 1;
-    }
-    else if(argc <= fileStartIndex)
+    if(argc <= fileStartIndex)
     {
         std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
         return 1;
@@ -180,6 +191,16 @@ int main(int argc, char* argv[])
 
     // Search-text extraction
     searchTxt = commandArguments[searchTxtIndex];
+
+    // Input validation
+    if(searchTxt.length() == 2)  
+    {
+        if(searchTxt[0] == '-' && !endOfOptions)
+        {
+            std::cerr << "Error Invalid Flag: Options: -i, -v, -c, -l, -f" << std::endl;
+            return 2;
+        }
+    }
 
     // Collect all filenames provided after search text.
     for(int i = fileStartIndex; i < argc; ++i)
