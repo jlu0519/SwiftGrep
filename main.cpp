@@ -87,19 +87,19 @@ void search(const std::string& fileName, std::ifstream& file, const std::string&
             {
                 if(userFlags.lineNumbers && userFlags.showFile)
                 {
-                    std::cout << fileName << ":" << lineNumber << ":" << line << std::endl;
+                    std::cout << fileName << ":" << lineNumber << ":" << line << "\n";
                 }
                 else if(userFlags.lineNumbers)
                 {
-                    std::cout << lineNumber << ":" << line << std::endl;
+                    std::cout << lineNumber << ":" << line << "\n";
                 }
                 else if(userFlags.showFile)
                 {
-                    std::cout << fileName << ":" << line << std::endl;
+                    std::cout << fileName << ":" << line << "\n";
                 }
                 else
                 {
-                    std::cout << line << std::endl;
+                    std::cout << line << "\n";
                 }
             }
         }
@@ -111,7 +111,7 @@ void search(const std::string& fileName, std::ifstream& file, const std::string&
     // Display the total number of accepted lines for this file.
     if(userFlags.countOnly)
     {
-        std::cout << fileName << ":" <<  countOfLineMatches << std::endl;
+        std::cout << fileName << ":" <<  countOfLineMatches << "\n";
     }
 }
 
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
         else if(commandArguments[i] == "--")
         {
             ++flagCount;
-            exceptionFlag = true;
+            endOfOptions = true;
             break;
         }
         // Stop parsing when the first non-flag argument is reached.
@@ -185,7 +185,7 @@ int main(int argc, char* argv[])
     // Input validation  
     if(argc <= fileStartIndex)
     {
-        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
+        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << "\n";
         return 1;
     }
 
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
     {
         if(searchTxt[0] == '-' && !endOfOptions)
         {
-            std::cerr << "Error Invalid Flag: Options: -i, -v, -c, -l, -f" << std::endl;
+            std::cerr << "Error Invalid Flag: Options: -i, -v, -c, -l, -f" << "\n";
             return 2;
         }
     }
@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
         // Checking if file can be opened successfully 
         if(!file.is_open()) 
         {
-            std::cerr << "Error opening file " << fileName << "!" <<  std::endl;
+            std::cerr << "Error opening file " << fileName << "!" << "\n";
             continue;
         }
         
