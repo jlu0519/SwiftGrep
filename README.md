@@ -7,7 +7,7 @@ SwiftGrep is a cross-platform command-line text searching utility written in mod
 
 ## Command Syntax
 
-`swiftGrep [-i|-v|-c|-l|-f] SEARCH_TEXT FILE...`
+`swiftGrep [OPTIONS] SEARCH_TEXT PATH...`
 
 ## Current Features
 
@@ -15,7 +15,15 @@ SwiftGrep is a cross-platform command-line text searching utility written in mod
 - Command-line interface
 - Basic command-line argument validation
 - Multiple file support
-- Flags: -i case-insensitive, -v invert-match, -c count-only, -l line-numbers, -f file-name
+- Recursive directory traversal (-r)
+
+Supported flags:
+- `-i` Case-insensitive search
+- `-v` Invert matches
+- `-c` Count matching lines
+- `-l` Display line numbers
+- `-f` Display file names
+- `-r` Recursively search directories
 
 ## Development Roadmap
 
@@ -25,13 +33,12 @@ SwiftGrep is a cross-platform command-line text searching utility written in mod
 - [x] Command-line argument support
 - [x] Display file name and line number
 - [x] Argument validation
-- [x] Case-insensitive searching (basic one flag option -i)
+- [x] Case-insensitive searching 
 - [x] Multiple file support
-- [x] One selectable command-line flag
 - [x] Support multiple command-line flags simultaneously
+- [x] Recursive directory searching
 
 ### Planned
-- [ ] Recursive directory searching
 - [ ] Unit tests
 - [ ] Performance optimization
 - [ ] Cross-platform build system (CMake)
@@ -57,6 +64,12 @@ swiftGrep hello file1.txt file2.txt file3.txt
 ```bash
 swiftGrep -i hello file.txt
 ```
+### Recursive directory search
+
+```bash
+swiftGrep -r hello test/
+```
+> **Note:** `-r` searches all regular files within the specified directory and its subdirectories. Directories that cannot be accessed due to permissions are skipped automatically.
 
 ### Combine flags
 

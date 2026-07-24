@@ -5,6 +5,9 @@
 #include <vector>
 #include <cctype>
 #include <iterator>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 struct SetFlags
 {
@@ -13,6 +16,7 @@ struct SetFlags
     bool countOnly {false};          // -c 
     bool lineNumbers {false};        // -l
     bool showFile {false};           // -f
+    bool recursiveSearch {false};    // -r
 };
 
 // Converts string to lower case - Used in case-insensitive search.
@@ -34,7 +38,7 @@ std::string lower(const std::string& str)
     return lowercaseText;
 }
 
-void search(const std::string& fileName, std::ifstream& file, const std::string& txt, const SetFlags& userFlags )
+void search(const fs::path& path, std::ifstream& file, const std::string& txt, const SetFlags& userFlags )
 {
     int lineNumber = 1;
     int countOfLineMatches{};
@@ -87,7 +91,7 @@ void search(const std::string& fileName, std::ifstream& file, const std::string&
             {
                 if(userFlags.lineNumbers && userFlags.showFile)
                 {
-                    std::cout << fileName << ":" << lineNumber << ":" << line << "\n";
+                    std::cout << path << ":" << lineNumber << ":" << line << "\n";
                 }
                 else if(userFlags.lineNumbers)
                 {
@@ -95,7 +99,7 @@ void search(const std::string& fileName, std::ifstream& file, const std::string&
                 }
                 else if(userFlags.showFile)
                 {
-                    std::cout << fileName << ":" << line << "\n";
+                    std::cout << path << ":" << line << "\n";
                 }
                 else
                 {
@@ -111,17 +115,17 @@ void search(const std::string& fileName, std::ifstream& file, const std::string&
     // Display the total number of accepted lines for this file.
     if(userFlags.countOnly)
     {
-        std::cout << fileName << ":" <<  countOfLineMatches << "\n";
+        std::cout << path << ":" <<  countOfLineMatches << "\n";
     }
 }
 
 int main(int argc, char* argv[])
 {
     std::vector<std::string> commandArguments;  
-    std::vector<std::string> userFiles; 
+    std::vector<fs::path> userPaths; 
     std::string searchTxt;
     int searchTxtIndex {};
-    int fileStartIndex {};
+    int pathStartIndex {};
     int flagCount {};
     SetFlags userFlags;
     bool endOfOptions{false};
@@ -162,6 +166,11 @@ int main(int argc, char* argv[])
         {
             userFlags.showFile = true;
         }
+        else if(commandArguments[i] == "-r")
+        {
+            userFlags.recursiveSearch = true;
+            userFlags.showFile = true;
+        }
         else if(commandArguments[i] == "--")
         {
             ++flagCount;
@@ -176,14 +185,13 @@ int main(int argc, char* argv[])
 
         ++flagCount;
     }
-    
 
-    // Determine the positions of the search text and first filename
+    // Determine the positions of the search text and first path
     searchTxtIndex = flagCount + 1;
-    fileStartIndex = searchTxtIndex + 1;
+    pathStartIndex = searchTxtIndex + 1;
 
     // Input validation  
-    if(argc <= fileStartIndex)
+    if(argc <= pathStartIndex)
     {
         std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << "\n";
         return 1;
@@ -197,32 +205,90 @@ int main(int argc, char* argv[])
     {
         if(searchTxt[0] == '-' && !endOfOptions)
         {
-            std::cerr << "Error Invalid Flag: Options: -i, -v, -c, -l, -f" << "\n";
+            std::cerr << "Error Invalid Flag: Options: -i, -v, -c, -l, -f, -r" << "\n";
             return 2;
         }
     }
 
-    // Collect all filenames provided after search text.
-    for(int i = fileStartIndex; i < argc; ++i)
+    // Collect all paths provided after search text.
+    for(int i = pathStartIndex; i < argc; ++i)
     {
-        userFiles.push_back(commandArguments[i]);    
+        userPaths.push_back(commandArguments[i]);    
     }
 
-    // Search for each file provided
-    for(const auto& fileName : userFiles)
+    // Search each user-supplied path independently
+    for(const auto& path : userPaths)
     {
-        // Open file using the stream constructor
-        std::ifstream file(fileName);
-
-        // Checking if file can be opened successfully 
-        if(!file.is_open()) 
+        // Enable recursive traversal when recursive search is requested
+        if(userFlags.recursiveSearch)
         {
-            std::cerr << "Error opening file " << fileName << "!" << "\n";
-            continue;
-        }
-        
-        search(fileName, file, searchTxt, userFlags);
+            if(fs::is_regular_file(path))
+            {
+                std::ifstream file(path);
 
+                // Checking if file can be opened successfully 
+                if(!file.is_open()) 
+                {
+                    std::cerr << "Error opening file " << path << "!" << "\n";
+                    continue;
+                }
+                
+                search(path, file, searchTxt, userFlags);
+            }
+            // Recursively search every regular file beneath the directory.
+            else if(fs::is_directory(path))
+            {
+                for(auto& directoryEntry : fs::recursive_directory_iterator(path,fs::directory_options::skip_permission_denied))
+                {
+                    
+                    fs::path childPath = directoryEntry.path();
+
+                    if(fs::is_regular_file(childPath))
+                    {
+                        std::ifstream file(childPath);
+
+                        if(!file.is_open()) 
+                        {
+                            std::cerr << "Error opening file " << childPath << "!" << "\n";
+                            continue;
+                        }
+                        
+                        search(childPath, file, searchTxt, userFlags);
+                    }
+                }
+            }
+            // Report paths that are neither files nor directories
+            else
+            {
+                std::cerr << path << ":not a searchable file or directory" << "\n";
+            }
+        }
+        else
+        {
+            // Search a single file without recursion
+            if(fs::is_regular_file(path))
+            {
+                std::ifstream file(path);
+
+                if(!file.is_open()) 
+                {
+                    std::cerr << "Error opening file " << path << "!" << "\n";
+                    continue;
+                }
+                
+                search(path, file, searchTxt, userFlags);
+            }
+            else if(fs::is_directory(path))
+            {
+                std::cerr << path <<": is a directory. Enter flag -r to search directories." << "\n";
+                continue;
+            }
+            else
+            {
+                std::cerr << path << ": not a searchable file or directory" << "\n";
+            }
+
+        }
     }
 
     return 0;
