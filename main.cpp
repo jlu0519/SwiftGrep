@@ -17,7 +17,60 @@ struct SetFlags
     bool lineNumbers {false};        // -l
     bool showFile {false};           // -f
     bool recursiveSearch {false};    // -r
+    bool endOfOptions {false};       // --                               
+    int flagCount {};
 };
+
+SetFlags parseFlags(const std::vector<std::string>& commandArguments)
+{
+    // Parse consecutive flags at the beginning of the command.
+    SetFlags userFlags;
+    int argc = static_cast<int>(commandArguments.size());
+
+    for(int i = 1; i < argc; ++i)
+    {
+        if(commandArguments[i] == "-i")
+        {
+            userFlags.caseInsensitive = true;
+        }
+        else if(commandArguments[i] == "-v")
+        {
+            userFlags.invertMatch = true;
+        }
+        else if(commandArguments[i] == "-c")
+        {
+            userFlags.countOnly = true;
+        }
+        else if(commandArguments[i] == "-l")
+        {
+            userFlags.lineNumbers = true;
+        }
+        else if(commandArguments[i] == "-f")
+        {
+            userFlags.showFile = true;
+        }
+        else if(commandArguments[i] == "-r")
+        {
+            userFlags.recursiveSearch = true;
+            userFlags.showFile = true;
+        }
+        else if(commandArguments[i] == "--")
+        {
+            ++userFlags.flagCount;
+            userFlags.endOfOptions = true;
+            break;
+        }
+        // Stop parsing when the first non-flag argument is reached.
+        else
+        {
+            break;
+        }
+
+        ++userFlags.flagCount;
+    }
+
+    return userFlags;
+}
 
 // Converts string to lower case - Used in case-insensitive search.
 std::string lower(const std::string& txt)
@@ -130,11 +183,9 @@ int main(int argc, char* argv[])
     std::vector<std::string> commandArguments;  
     std::vector<fs::path> userPaths; 
     std::string searchTxt;
+    SetFlags userFlags;
     int searchTxtIndex {};
     int pathStartIndex {};
-    int flagCount {};
-    SetFlags userFlags;
-    bool endOfOptions{false};
     
     // Convert command-line arguments to strings for easier processing. 
     for(int i = 0; i < argc; ++i)
@@ -149,51 +200,11 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // Parse consecutive flags at the beginning of the command.
-    for(int i = 1; i < argc; ++i)
-    {
-        if(commandArguments[i] == "-i")
-        {
-            userFlags.caseInsensitive = true;
-        }
-        else if(commandArguments[i] == "-v")
-        {
-            userFlags.invertMatch = true;
-        }
-        else if(commandArguments[i] == "-c")
-        {
-            userFlags.countOnly = true;
-        }
-        else if(commandArguments[i] == "-l")
-        {
-            userFlags.lineNumbers = true;
-        }
-        else if(commandArguments[i] == "-f")
-        {
-            userFlags.showFile = true;
-        }
-        else if(commandArguments[i] == "-r")
-        {
-            userFlags.recursiveSearch = true;
-            userFlags.showFile = true;
-        }
-        else if(commandArguments[i] == "--")
-        {
-            ++flagCount;
-            endOfOptions = true;
-            break;
-        }
-        // Stop parsing when the first non-flag argument is reached.
-        else
-        {
-            break;
-        }
-
-        ++flagCount;
-    }
+    // Set flags if provided
+    userFlags = parseFlags(commandArguments);
 
     // Determine the positions of the search text and first path
-    searchTxtIndex = flagCount + 1;
+    searchTxtIndex = userFlags.flagCount + 1;
     pathStartIndex = searchTxtIndex + 1;
 
     // Input validation  
@@ -209,7 +220,7 @@ int main(int argc, char* argv[])
     // Input validation
     if(searchTxt.length() == 2)  
     {
-        if(searchTxt[0] == '-' && !endOfOptions)
+        if(searchTxt[0] == '-' && !userFlags.endOfOptions)
         {
             std::cerr << "Error Invalid Flag: Options: -i, -v, -c, -l, -f, -r" << "\n";
             return 2;
