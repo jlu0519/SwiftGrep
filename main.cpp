@@ -20,12 +20,12 @@ struct SetFlags
 };
 
 // Converts string to lower case - Used in case-insensitive search.
-std::string lower(const std::string& str)
+std::string lower(const std::string& txt)
 {
     std::string lowercaseText;
     std::transform(
-        str.begin(),
-        str.end(),
+        txt.begin(),
+        txt.end(),
         std::back_inserter(lowercaseText),
         [](char character)
         {
@@ -38,13 +38,20 @@ std::string lower(const std::string& str)
     return lowercaseText;
 }
 
-void search(const fs::path& path, std::ifstream& file, const std::string& txt, const SetFlags& userFlags )
+void search(const fs::path& path, const std::string& txt, const SetFlags& userFlags )
 {
     int lineNumber = 1;
     int countOfLineMatches{};
     std::string line;
     std::string searchTxt = txt;
-    
+    std::ifstream file(path);
+
+    if(!file.is_open()) 
+    {
+        std::cerr << "Error opening file " << path << "!" << "\n";
+        return;
+    }
+
     // Normalize the search text once to avoid repeated conversions during case insensitive search
     if(userFlags.caseInsensitive)
     {
@@ -109,7 +116,6 @@ void search(const fs::path& path, std::ifstream& file, const std::string& txt, c
         }
 
         ++lineNumber;
-
     }
     
     // Display the total number of accepted lines for this file.
@@ -139,7 +145,7 @@ int main(int argc, char* argv[])
     // Input validation
     if(argc <= 1)
     {
-        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << std::endl;
+        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [OPTIONS] SEARCH_TEXT PATH...]" << std::endl;
         return 1;
     }
 
@@ -193,7 +199,7 @@ int main(int argc, char* argv[])
     // Input validation  
     if(argc <= pathStartIndex)
     {
-        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [-flag] {searchtxt} {file1} [file2 ...]" << "\n";
+        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [OPTIONS] SEARCH_TEXT PATH...]" << std::endl;
         return 1;
     }
 
@@ -224,43 +230,25 @@ int main(int argc, char* argv[])
         {
             if(fs::is_regular_file(path))
             {
-                std::ifstream file(path);
-
-                // Checking if file can be opened successfully 
-                if(!file.is_open()) 
-                {
-                    std::cerr << "Error opening file " << path << "!" << "\n";
-                    continue;
-                }
-                
-                search(path, file, searchTxt, userFlags);
+                search(path, searchTxt, userFlags);
             }
             // Recursively search every regular file beneath the directory.
             else if(fs::is_directory(path))
             {
                 for(auto& directoryEntry : fs::recursive_directory_iterator(path,fs::directory_options::skip_permission_denied))
                 {
-                    
                     fs::path childPath = directoryEntry.path();
 
                     if(fs::is_regular_file(childPath))
                     {
-                        std::ifstream file(childPath);
-
-                        if(!file.is_open()) 
-                        {
-                            std::cerr << "Error opening file " << childPath << "!" << "\n";
-                            continue;
-                        }
-                        
-                        search(childPath, file, searchTxt, userFlags);
+                        search(childPath, searchTxt, userFlags);
                     }
                 }
             }
             // Report paths that are neither files nor directories
             else
             {
-                std::cerr << path << ":not a searchable file or directory" << "\n";
+                std::cerr << path << ": not a searchable file or directory" << "\n";
             }
         }
         else
@@ -268,15 +256,7 @@ int main(int argc, char* argv[])
             // Search a single file without recursion
             if(fs::is_regular_file(path))
             {
-                std::ifstream file(path);
-
-                if(!file.is_open()) 
-                {
-                    std::cerr << "Error opening file " << path << "!" << "\n";
-                    continue;
-                }
-                
-                search(path, file, searchTxt, userFlags);
+                search(path, searchTxt, userFlags);
             }
             else if(fs::is_directory(path))
             {
@@ -287,7 +267,6 @@ int main(int argc, char* argv[])
             {
                 std::cerr << path << ": not a searchable file or directory" << "\n";
             }
-
         }
     }
 
