@@ -6,6 +6,7 @@
 #include <cctype>
 #include <iterator>
 #include <filesystem>
+#include <array>
 
 namespace fs = std::filesystem;
 
@@ -17,7 +18,80 @@ struct SetFlags
     bool lineNumbers {false};        // -l
     bool showFile {false};           // -f
     bool recursiveSearch {false};    // -r
+    bool endOfOptions {false};       // --                               
+    int flagCommandArguments {};
 };
+
+SetFlags parseFlags(const std::vector<std::string>& commandArguments)
+{
+    // Parse consecutive flags at the beginning of the command.
+    SetFlags userFlags;
+    int argc = static_cast<int>(commandArguments.size());
+    int lengthOfArgument {};
+
+    for( int i = 1; i < argc; ++i)
+    { 
+        if(commandArguments[i] == "--")
+        {
+            userFlags.endOfOptions = true;
+            ++userFlags.flagCommandArguments;
+            return userFlags;
+        }
+        else if (commandArguments[i][0] == '-')
+        {
+            lengthOfArgument = commandArguments[i].size();
+            
+            if(lengthOfArgument <= 1)
+            {
+                std::cerr << "Invalid Option: Hint: [-i] [-v] [-c] [-l] [-f] [-r]" << "\n";
+                return userFlags;
+            }
+
+            for(int j = 1; j < lengthOfArgument; ++j)
+            {
+                if(commandArguments[i][j] == 'i')
+                {
+                    userFlags.caseInsensitive = true;
+                }
+                else if(commandArguments[i][j] == 'v')
+                {
+                    userFlags.invertMatch = true;
+                }
+                else if(commandArguments[i][j] == 'c')
+                {
+                    userFlags.countOnly = true;
+                }
+                else if(commandArguments[i][j] == 'l')
+                {
+                    userFlags.lineNumbers = true;
+                }
+                else if(commandArguments[i][j] == 'f')
+                {
+                    userFlags.showFile = true;
+                }
+                else if(commandArguments[i][j] == 'r')
+                {
+                    userFlags.recursiveSearch = true;
+                    userFlags.showFile= true;
+                }
+                else
+                {
+                    std::cerr << "Invalid Option: Hint: [-i] [-v] [-c] [-l] [-f] [-r]" << "\n";
+                    return userFlags;
+                }
+            }
+
+        }
+        else
+        {
+            return userFlags;
+        }
+
+        ++userFlags.flagCommandArguments;
+    }
+
+    return userFlags;
+}
 
 // Converts string to lower case - Used in case-insensitive search.
 std::string lower(const std::string& txt)
@@ -130,11 +204,9 @@ int main(int argc, char* argv[])
     std::vector<std::string> commandArguments;  
     std::vector<fs::path> userPaths; 
     std::string searchTxt;
+    SetFlags userFlags;
     int searchTxtIndex {};
     int pathStartIndex {};
-    int flagCount {};
-    SetFlags userFlags;
-    bool endOfOptions{false};
     
     // Convert command-line arguments to strings for easier processing. 
     for(int i = 0; i < argc; ++i)
@@ -149,57 +221,17 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // Parse consecutive flags at the beginning of the command.
-    for(int i = 1; i < argc; ++i)
-    {
-        if(commandArguments[i] == "-i")
-        {
-            userFlags.caseInsensitive = true;
-        }
-        else if(commandArguments[i] == "-v")
-        {
-            userFlags.invertMatch = true;
-        }
-        else if(commandArguments[i] == "-c")
-        {
-            userFlags.countOnly = true;
-        }
-        else if(commandArguments[i] == "-l")
-        {
-            userFlags.lineNumbers = true;
-        }
-        else if(commandArguments[i] == "-f")
-        {
-            userFlags.showFile = true;
-        }
-        else if(commandArguments[i] == "-r")
-        {
-            userFlags.recursiveSearch = true;
-            userFlags.showFile = true;
-        }
-        else if(commandArguments[i] == "--")
-        {
-            ++flagCount;
-            endOfOptions = true;
-            break;
-        }
-        // Stop parsing when the first non-flag argument is reached.
-        else
-        {
-            break;
-        }
-
-        ++flagCount;
-    }
+    // Set flags if provided
+    userFlags = parseFlags(commandArguments);
 
     // Determine the positions of the search text and first path
-    searchTxtIndex = flagCount + 1;
+    searchTxtIndex = userFlags.flagCommandArguments + 1;
     pathStartIndex = searchTxtIndex + 1;
 
     // Input validation  
     if(argc <= pathStartIndex)
     {
-        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [OPTIONS] SEARCH_TEXT PATH...]" << std::endl;
+        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [OPTIONS] SEARCH_TEXT PATH...]" << "\n";
         return 1;
     }
 
@@ -209,7 +241,7 @@ int main(int argc, char* argv[])
     // Input validation
     if(searchTxt.length() == 2)  
     {
-        if(searchTxt[0] == '-' && !endOfOptions)
+        if(searchTxt[0] == '-' && !userFlags.endOfOptions)
         {
             std::cerr << "Error Invalid Flag: Options: -i, -v, -c, -l, -f, -r" << "\n";
             return 2;
