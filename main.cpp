@@ -44,7 +44,9 @@ SetFlags parseFlags(const std::vector<std::string>& commandArguments)
             if(lengthOfArgument <= 1)
             {
                 std::cerr << "Invalid Option: Hint: [-i] [-v] [-c] [-l] [-f] [-r]" << "\n";
-                return userFlags;
+
+                
+                std::exit(0);
             }
 
             for(int j = 1; j < lengthOfArgument; ++j)
@@ -77,7 +79,7 @@ SetFlags parseFlags(const std::vector<std::string>& commandArguments)
                 else
                 {
                     std::cerr << "Invalid Option: Hint: [-i] [-v] [-c] [-l] [-f] [-r]" << "\n";
-                    return userFlags;
+                    std::exit(0);
                 }
             }
 

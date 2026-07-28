@@ -37,6 +37,7 @@ Supported flags:
 - [x] Multiple file support
 - [x] Support multiple command-line flags simultaneously
 - [x] Recursive directory searching
+- [x] Short combination flags EX: -ilf
 
 ### Planned
 - [ ] Unit tests
@@ -75,6 +76,10 @@ swiftGrep -r hello test/
 
 ```bash
 swiftGrep -i -l -f hello file1.txt file2.txt
+```
+or
+```bash
+swiftGrep -ilf hello file1.txt file2.txt
 ```
 
 ### Search for text beginning with `-`
