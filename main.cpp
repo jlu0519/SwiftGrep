@@ -6,6 +6,7 @@
 #include <cctype>
 #include <iterator>
 #include <filesystem>
+#include <array>
 
 namespace fs = std::filesystem;
 
@@ -18,7 +19,7 @@ struct SetFlags
     bool showFile {false};           // -f
     bool recursiveSearch {false};    // -r
     bool endOfOptions {false};       // --                               
-    int flagCount {};
+    int flagCommandArguments {};
 };
 
 SetFlags parseFlags(const std::vector<std::string>& commandArguments)
@@ -26,47 +27,67 @@ SetFlags parseFlags(const std::vector<std::string>& commandArguments)
     // Parse consecutive flags at the beginning of the command.
     SetFlags userFlags;
     int argc = static_cast<int>(commandArguments.size());
+    int lengthOfArgument {};
 
-    for(int i = 1; i < argc; ++i)
-    {
-        if(commandArguments[i] == "-i")
+    for( int i = 1; i < argc; ++i)
+    { 
+        if(commandArguments[i] == "--")
         {
-            userFlags.caseInsensitive = true;
-        }
-        else if(commandArguments[i] == "-v")
-        {
-            userFlags.invertMatch = true;
-        }
-        else if(commandArguments[i] == "-c")
-        {
-            userFlags.countOnly = true;
-        }
-        else if(commandArguments[i] == "-l")
-        {
-            userFlags.lineNumbers = true;
-        }
-        else if(commandArguments[i] == "-f")
-        {
-            userFlags.showFile = true;
-        }
-        else if(commandArguments[i] == "-r")
-        {
-            userFlags.recursiveSearch = true;
-            userFlags.showFile = true;
-        }
-        else if(commandArguments[i] == "--")
-        {
-            ++userFlags.flagCount;
             userFlags.endOfOptions = true;
-            break;
+            ++userFlags.flagCommandArguments;
+            return userFlags;
         }
-        // Stop parsing when the first non-flag argument is reached.
+        else if (commandArguments[i][0] == '-')
+        {
+            lengthOfArgument = commandArguments[i].size();
+            
+            if(lengthOfArgument <= 1)
+            {
+                std::cerr << "Invalid Option: Hint: [-i] [-v] [-c] [-l] [-f] [-r]" << "\n";
+                return userFlags;
+            }
+
+            for(int j = 1; j < lengthOfArgument; ++j)
+            {
+                if(commandArguments[i][j] == 'i')
+                {
+                    userFlags.caseInsensitive = true;
+                }
+                else if(commandArguments[i][j] == 'v')
+                {
+                    userFlags.invertMatch = true;
+                }
+                else if(commandArguments[i][j] == 'c')
+                {
+                    userFlags.countOnly = true;
+                }
+                else if(commandArguments[i][j] == 'l')
+                {
+                    userFlags.lineNumbers = true;
+                }
+                else if(commandArguments[i][j] == 'f')
+                {
+                    userFlags.showFile = true;
+                }
+                else if(commandArguments[i][j] == 'r')
+                {
+                    userFlags.recursiveSearch = true;
+                    userFlags.showFile= true;
+                }
+                else
+                {
+                    std::cerr << "Invalid Option: Hint: [-i] [-v] [-c] [-l] [-f] [-r]" << "\n";
+                    return userFlags;
+                }
+            }
+
+        }
         else
         {
-            break;
+            return userFlags;
         }
 
-        ++userFlags.flagCount;
+        ++userFlags.flagCommandArguments;
     }
 
     return userFlags;
@@ -204,13 +225,13 @@ int main(int argc, char* argv[])
     userFlags = parseFlags(commandArguments);
 
     // Determine the positions of the search text and first path
-    searchTxtIndex = userFlags.flagCount + 1;
+    searchTxtIndex = userFlags.flagCommandArguments + 1;
     pathStartIndex = searchTxtIndex + 1;
 
     // Input validation  
     if(argc <= pathStartIndex)
     {
-        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [OPTIONS] SEARCH_TEXT PATH...]" << std::endl;
+        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [OPTIONS] SEARCH_TEXT PATH...]" << "\n";
         return 1;
     }
 
