@@ -1,0 +1,4 @@
+2026-08-01 08:00:00 INFO Application started
+2026-08-01 08:00:01 DEBUG Searching for needle
+2026-08-01 08:00:02 ERROR File not found
+2026-08-01 08:00:03 INFO Search completed

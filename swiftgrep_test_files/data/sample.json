@@ -1,0 +1,6 @@
+{
+  "application": "SwiftGrep",
+  "pattern": "needle",
+  "enabled": true,
+  "notes": "NEEDLE appears here too"
+}

@@ -1,0 +1,5 @@
+This is a simple test file.
+The needle is on this line.
+This line does not match.
+Another needle appears here.
+End of file.

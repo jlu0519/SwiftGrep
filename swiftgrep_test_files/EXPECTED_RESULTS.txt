@@ -1,0 +1,80 @@
+SwiftGrep Suggested Test Cases
+==============================
+
+Assuming your program accepts a file or directory plus a search pattern,
+these cases can help verify behavior.
+
+1. Basic matching
+   Search: needle
+   File: simple.txt
+   Expected matching lines: 2
+
+2. Case-sensitive matching
+   Search: needle
+   File: case_test.txt
+   Expected exact lowercase substring matches: lines 1, 5, and 6
+
+3. Case-insensitive matching
+   Search: needle
+   File: case_test.txt
+   Expected matching lines: all 6 lines
+
+4. No matches
+   Search: needle
+   File: no_match.txt
+   Expected matching lines: 0
+
+5. Multiple matches on one line
+   Search: needle
+   File: multiple_matches.txt
+   Expected matching lines: 4 with case-sensitive search
+   Note: line-oriented grep normally prints a matching line once, even if
+   the term appears multiple times.
+
+6. Recursive search
+   Search: needle
+   Directory: src
+   Expected matches in main.cpp, search.cpp, nested/deep.txt, and
+   nested/deeper.log.
+
+7. Inverted matching
+   Search: needle
+   File: simple.txt
+   Expected nonmatching lines: 3
+
+8. Count-only behavior
+   Search: error
+   File: logs/errors.log
+   Expected case-sensitive matching lines: 2
+   Expected case-insensitive matching lines: 4
+
+9. Empty file
+   Search: needle
+   File: empty.txt
+   Expected matching lines: 0
+
+10. No final newline
+    Search: needle
+    File: no_final_newline.txt
+    Expected matching lines: 1
+
+11. Windows CRLF endings
+    Search: needle
+    File: windows_crlf.txt
+    Expected matching lines: 1
+
+12. Unicode
+    Search: café
+    File: unicode.txt
+    Expected case-sensitive matching lines: 1
+
+13. Hidden file
+    Search: needle
+    File: .hidden_test.txt
+    Expected matching lines: 1 if hidden files are included.
+
+14. Binary input
+    Search: needle
+    File: data/binary_sample.bin
+    Expected behavior depends on your design. The important test is that
+    SwiftGrep does not crash.

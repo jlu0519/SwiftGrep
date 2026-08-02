@@ -1,0 +1,10 @@
+Development notes
+
+SwiftGrep should support:
+- case-insensitive matching
+- inverted matching
+- match counting
+- line numbers
+- recursive traversal
+
+The word needle is included for testing.

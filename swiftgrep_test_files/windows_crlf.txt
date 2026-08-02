@@ -1,0 +1,3 @@
+Windows line endings
+needle on CRLF line
+final CRLF line
