@@ -9,7 +9,9 @@ SwiftGrep is a cross-platform command-line text searching utility written in mod
 
 The following demonstration shows SwiftGrep performing a recursive search across multiple test files.
 
-https://github.com/user-attachments/assets/83970dbb-993d-42d1-8f05-f0a2d72c7738
+<p align="left">
+  <img src="docs/SwiftGrepDemo.gif" alt="Demo" width="700">
+</p>
 
 ## Command Syntax
 
