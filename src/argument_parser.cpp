@@ -1,11 +1,15 @@
 #include "argument_parser.hpp"
 #include <iostream>
 #include <cstdlib>
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 SetFlags parseFlags(const std::vector<std::string>& commandArguments)
 {
     // Parse consecutive flags at the beginning of the command.
-    SetFlags userFlags;
+    SetFlags userFlags {};
+
     int numberOfArguments = static_cast<int>(commandArguments.size());
     int lengthOfArgument {};
 
@@ -25,8 +29,9 @@ SetFlags parseFlags(const std::vector<std::string>& commandArguments)
                 
                 if(lengthOfArgument <= 1)
                 {
-                    std::cerr << "Invalid Option: Hint: [-i] [-v] [-c] [-l] [-f] [-r]" << "\n";
-                    std::exit(2);
+                    userFlags.flagError = SetFlags::FlagParseError::loneDash;
+
+                    return userFlags;
                 }
 
                 for(int j = 1; j < lengthOfArgument; ++j)
@@ -58,8 +63,9 @@ SetFlags parseFlags(const std::vector<std::string>& commandArguments)
                     }
                     else
                     {
-                        std::cerr << "Invalid Option: Hint: [-i] [-v] [-c] [-l] [-f] [-r]" << "\n";
-                        std::exit(2);
+                        userFlags.flagError = SetFlags::FlagParseError::unrecognizedOptionCharacter;
+
+                        return userFlags;
                     }
                 }
 
@@ -77,4 +83,37 @@ SetFlags parseFlags(const std::vector<std::string>& commandArguments)
         }
     }
     return userFlags;
+}
+
+SearchArguments parseSearchArguments(SetFlags userFlags, 
+        const std::vector<std::string>& commandArguments)
+{
+    SearchArguments userSearchArguments;
+    int searchTxtIndex {};
+    int pathStartIndex {};
+    int numberOfArguments = static_cast<int>(commandArguments.size());
+
+    // Determine the positions of the search text and first path
+    searchTxtIndex = userFlags.flagCommandArguments + 1;
+    pathStartIndex = searchTxtIndex + 1;
+
+    // Input validation  
+    if(numberOfArguments <= pathStartIndex)
+    {
+
+        userSearchArguments.searchParseError = SearchArguments::SearchParseError::noPathProvided;
+
+        return userSearchArguments;
+    }
+
+    // Search-text extraction
+    userSearchArguments.searchTxt = commandArguments[searchTxtIndex];
+
+    // Collect all paths provided after search text.
+    for(int i = pathStartIndex; i < numberOfArguments; ++i)
+    {
+        userSearchArguments.userPaths.push_back(commandArguments[i]);    
+    }
+
+    return userSearchArguments;
 }

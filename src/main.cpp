@@ -14,12 +14,9 @@ namespace fs = std::filesystem;
 
 int main(int argc, char* argv[])
 {
-    std::vector<std::string> commandArguments;  
-    std::vector<fs::path> userPaths; 
-    std::string searchTxt;
+    std::vector<std::string> commandArguments;
     SetFlags userFlags;
-    int searchTxtIndex {};
-    int pathStartIndex {};
+    SearchArguments parsedSearchArguments;
     
     // Convert command-line arguments to strings for easier processing. 
     for(int i = 0; i < argc; ++i)
@@ -30,52 +27,40 @@ int main(int argc, char* argv[])
     // Input validation
     if(argc <= 1)
     {
-        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [OPTIONS] SEARCH_TEXT PATH...]" << std::endl;
+        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [OPTIONS] PATTERN PATH...]" << std::endl;
         return 1;
     }
 
     // Set flags if provided
     userFlags = parseFlags(commandArguments);
 
-    // Determine the positions of the search text and first path
-    searchTxtIndex = userFlags.flagCommandArguments + 1;
-    pathStartIndex = searchTxtIndex + 1;
-
-    // Input validation  
-    if(argc <= pathStartIndex)
+    // Check for userFlag errors
+    if(userFlags.flagError != SetFlags::FlagParseError::none)
     {
-        std::cerr << "Error Invalid Syntax: Hint: swiftGrep [OPTIONS] SEARCH_TEXT PATH...]" << "\n";
-        return 1;
-    }
-
-    // Search-text extraction
-    searchTxt = commandArguments[searchTxtIndex];
-
-    // Input validation
-    if(searchTxt.length() == 2)  
-    {
-        if(searchTxt[0] == '-' && !userFlags.endOfOptions)
-        {
             std::cerr << "Error Invalid Flag: Options: -i, -v, -c, -l, -f, -r" << "\n";
             return 2;
-        }
     }
 
-    // Collect all paths provided after search text.
-    for(int i = pathStartIndex; i < argc; ++i)
+    // Parse remaining command Arguments
+    parsedSearchArguments = parseSearchArguments(userFlags,commandArguments);
+
+
+    // Check for userFlag errors
+    if(parsedSearchArguments.searchParseError!= SearchArguments::SearchParseError::none)
     {
-        userPaths.push_back(commandArguments[i]);    
+            std::cerr << "Error Invalid Syntax: Hint: swiftGrep [OPTIONS] PATTERN PATH...]" << "\n";
+            return 2;
     }
 
     // Search each user-supplied path independently
-    for(const auto& path : userPaths)
+    for(const auto& path : parsedSearchArguments.userPaths)
     {
         // Enable recursive traversal when recursive search is requested
         if(userFlags.recursiveSearch)
         {
             if(fs::is_regular_file(path))
             {
-                search(path, searchTxt, userFlags);
+                search(path, parsedSearchArguments.searchTxt, userFlags);
             }
             // Recursively search every regular file beneath the directory.
             else if(fs::is_directory(path))
@@ -86,7 +71,7 @@ int main(int argc, char* argv[])
 
                     if(fs::is_regular_file(childPath))
                     {
-                        search(childPath, searchTxt, userFlags);
+                        search(childPath, parsedSearchArguments.searchTxt, userFlags);
                     }
                 }
             }
@@ -101,7 +86,7 @@ int main(int argc, char* argv[])
             // Search a single file without recursion
             if(fs::is_regular_file(path))
             {
-                search(path, searchTxt, userFlags);
+                search(path, parsedSearchArguments.searchTxt, userFlags);
             }
             else if(fs::is_directory(path))
             {
