@@ -52,53 +52,8 @@ int main(int argc, char* argv[])
             return 2;
     }
 
-    // Search each user-supplied path independently
-    for(const auto& path : parsedSearchArguments.userPaths)
-    {
-        // Enable recursive traversal when recursive search is requested
-        if(userFlags.recursiveSearch)
-        {
-            if(fs::is_regular_file(path))
-            {
-                search(path, parsedSearchArguments.searchTxt, userFlags);
-            }
-            // Recursively search every regular file beneath the directory.
-            else if(fs::is_directory(path))
-            {
-                for(auto& directoryEntry : fs::recursive_directory_iterator(path,fs::directory_options::skip_permission_denied))
-                {
-                    fs::path childPath = directoryEntry.path();
+    searchPaths(parsedSearchArguments, userFlags);
 
-                    if(fs::is_regular_file(childPath))
-                    {
-                        search(childPath, parsedSearchArguments.searchTxt, userFlags);
-                    }
-                }
-            }
-            // Report paths that are neither files nor directories
-            else
-            {
-                std::cerr << path << ": not a searchable file or directory" << "\n";
-            }
-        }
-        else
-        {
-            // Search a single file without recursion
-            if(fs::is_regular_file(path))
-            {
-                search(path, parsedSearchArguments.searchTxt, userFlags);
-            }
-            else if(fs::is_directory(path))
-            {
-                std::cerr << path <<": is a directory. Enter flag -r to search directories." << "\n";
-                continue;
-            }
-            else
-            {
-                std::cerr << path << ": not a searchable file or directory" << "\n";
-            }
-        }
-    }
 
     return 0;
 }
