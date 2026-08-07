@@ -1,33 +1,74 @@
-### C++ ###
-# Prerequisites
+# =========================
+# C++ build artifacts
+# =========================
+
+# Dependency files
 *.d
 
-# Compiled Object files
-*.slo
-*.lo
+# Object files
 *.o
 *.obj
+*.lo
+*.slo
 
-# Precompiled Headers
+# Precompiled headers
 *.gch
 *.pch
 
-# Compiled Dynamic libraries
+# Static libraries
+*.a
+*.lib
+*.la
+*.lai
+
+# Shared libraries
 *.so
 *.dylib
 *.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
 
 # Executables
 *.exe
 *.out
 *.app
+
+
+# =========================
+# CMake
+# =========================
+
+# Out-of-source build directories
+build/
+cmake-build-*/
+
+# CMake-generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+
+# User-specific CMake configuration
+CMakeUserPresets.json
+
+
+# =========================
+# Editors
+# =========================
+
+# Vim / Neovim swap and backup files
+*.swp
+*.swo
+*~
+
+
+
+# =========================
+# Operating systems
+# =========================
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
