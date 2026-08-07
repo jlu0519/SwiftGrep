@@ -48,9 +48,9 @@ Supported flags:
 - [x] Recursive directory searching
 - [x] Short combination flags EX: -ilf
 - [x] Regex support
+- [x] Minimal CMake Setup
 
 ### Planned
-- [ ] Minimal CMake Setup
 - [ ] GoogleTest
 - [ ] Unit tests
 - [ ] Continuous Integration (GitHub Actions)
