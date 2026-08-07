@@ -50,9 +50,9 @@ Supported flags:
 - [x] Regex support
 
 ### Planned
+- [ ] Minimal CMake Setup
+- [ ] GoogleTest
 - [ ] Unit tests
-- [ ] Performance optimization
-- [ ] Cross-platform build system (CMake)
 - [ ] Continuous Integration (GitHub Actions)
 - [ ] Version 1.0 release
 
