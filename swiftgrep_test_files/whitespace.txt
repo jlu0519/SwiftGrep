@@ -1,6 +1,0 @@
-    needle with leading spaces
-needle with trailing spaces    
-	needle after a tab
-text	needle	between tabs
-
-needle after an empty line
