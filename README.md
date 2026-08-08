@@ -49,10 +49,11 @@ Supported flags:
 - [x] Short combination flags EX: -ilf
 - [x] Regex support
 - [x] Minimal CMake Setup
+- [x] GoogleTest
+- [x] Argument Parsing Unit Tests
 
 ### Planned
-- [ ] GoogleTest
-- [ ] Unit tests
+- [ ] Search Unit tests
 - [ ] Continuous Integration (GitHub Actions)
 - [ ] Version 1.0 release
 
