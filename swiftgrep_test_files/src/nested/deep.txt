@@ -1,3 +1,0 @@
-This file is several directories deep.
-Recursive search should find this needle.
-SwiftGrep recursive test.

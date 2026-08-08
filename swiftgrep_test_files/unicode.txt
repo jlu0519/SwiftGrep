@@ -1,9 +1,0 @@
-Unicode search samples:
-café
-CAFÉ
-naïve
-résumé
-jalapeño
-東京
-Привет
-emoji needle 🔍
