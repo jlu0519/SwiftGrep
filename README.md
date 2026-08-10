@@ -133,10 +133,10 @@ ctest --test-dir build --output-on-failure
 * [x] GoogleTest integration
 * [x] Argument parsing unit tests
 * [x] Search unit tests
+* [x] v0.1.0 release
 
 ### Planned
 
-* [ ] v0.1.0 release
 * [ ] Performance profiling
 * [ ] Search performance optimization
 * [ ] Multithreaded file searching
