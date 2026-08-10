@@ -85,7 +85,7 @@ SetFlags parseFlags(const std::vector<std::string>& commandArguments)
     return userFlags;
 }
 
-SearchArguments parseSearchArguments(SetFlags userFlags, 
+SearchArguments parseSearchArguments(const SetFlags& userFlags, 
         const std::vector<std::string>& commandArguments)
 {
     SearchArguments userSearchArguments;
