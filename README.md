@@ -1,107 +1,147 @@
 # SwiftGrep
 
-**Author:** Luke Young  
-**Language Standard:** C++20
+SwiftGrep is a cross-platform, grep-inspired command-line text search utility written in C++20.
 
-SwiftGrep is a cross-platform command-line text searching utility written in modern C++. It is inspired by the Unix `grep` utility and is being developed as a learning project focused on writing clean, portable, and efficient C++.
+SwiftGrep is being developed as a learning project for modern C++, testing, filesystem operations, and performance optimization. It is not intended to be a drop-in replacement for GNU grep.
 
-## Demo
+## Features
 
-The following demonstration shows SwiftGrep performing a recursive search across multiple test files.
+* Regular expression searching
+* Case-insensitive and inverted matching
+* Match counting and line-number output
+* Multiple-file and recursive directory searching
+* Combined command-line flags
+* Linux and Windows support
 
-<p align="left">
-  <img src="docs/SwiftGrepDemo.gif" alt="Demo" width="700">
-</p>
+## Build
 
-## Command Syntax
+### Requirements
 
-`swiftGrep [OPTIONS] PATTERN PATH...`
+* C++20-compatible compiler
+* CMake 3.16 or newer
+* Git
 
-## Current Features
+From the project root:
 
-- Search text files for matching strings
-- Command-line interface
-- Basic command-line argument validation
-- Multiple file support
-- Recursive directory traversal (-r)
-- Regular expression searching support
+```bash
+cmake -S . -B build
+cmake --build build
+```
 
-Supported flags:
-- `-i` Case-insensitive search
-- `-v` Invert matches
-- `-c` Count matching lines
-- `-l` Display line numbers
-- `-f` Display file names
-- `-r` Recursively search directories
+The executable will be created inside the build directory.
 
-## Development Roadmap
+For an optimized release build:
 
-### Completed
-- [x] Basic file reader
-- [x] Basic string search
-- [x] Command-line argument support
-- [x] Display file name and line number
-- [x] Argument validation
-- [x] Case-insensitive searching 
-- [x] Multiple file support
-- [x] Support multiple command-line flags simultaneously
-- [x] Recursive directory searching
-- [x] Short combination flags EX: -ilf
-- [x] Regex support
-- [x] Minimal CMake Setup
-- [x] GoogleTest
-- [x] Argument Parsing Unit Tests
+```bash
+cmake -S . -B build-release -DCMAKE_BUILD_TYPE=Release
+cmake --build build-release
+```
 
-### Planned
-- [ ] Search Unit tests
-- [ ] Continuous Integration (GitHub Actions)
-- [ ] Version 1.0 release
+The executable will be created inside the build-release directory.
 
 ## Usage
 
-### Basic search
-
-```bash
-swiftGrep hello file.txt
-```
-### Regex Example
-```bash
-swiftGrep '[0-9]*' file.txt
+```text
+swiftgrep [OPTIONS] PATTERN PATH...
 ```
 
-### Search multiple files
+### Supported Flags
+
+* `-i` Case-insensitive search
+* `-v` Invert matches
+* `-c` Count matching lines
+* `-l` Display line numbers
+* `-f` Display file names
+* `-r` Recursively search directories
+
+### Basic Search
 
 ```bash
-swiftGrep hello file1.txt file2.txt file3.txt
+swiftgrep hello file.txt
 ```
 
-### Case-insensitive search
+### Regex Search
 
 ```bash
-swiftGrep -i hello file.txt
+swiftgrep '[0-9]+' file.txt
 ```
-### Recursive directory search
+
+### Search Multiple Files
 
 ```bash
-swiftGrep -r hello test/
+swiftgrep hello file1.txt file2.txt file3.txt
 ```
-> **Note:** `-r` searches all regular files within the specified directory and its subdirectories. Directories that cannot be accessed due to permissions are skipped automatically.
 
-### Combine flags
+### Case-Insensitive Search
 
 ```bash
-swiftGrep -i -l -f hello file1.txt file2.txt
+swiftgrep -i hello file.txt
 ```
+
+### Recursive Directory Search
+
+```bash
+swiftgrep -r hello test/
+```
+
+> **Note:** `-r` searches regular files within the specified directory and its subdirectories. Directories that cannot be accessed are skipped.
+
+### Combine Flags
+
+```bash
+swiftgrep -i -l -f hello file1.txt file2.txt
+```
+
 or
+
 ```bash
-swiftGrep -ilf hello file1.txt file2.txt
+swiftgrep -ilf hello file1.txt file2.txt
 ```
 
-### Search for text beginning with `-`
+### Search for Text Beginning with `-`
 
 ```bash
-swiftGrep -- -x file.txt
+swiftgrep -- -x file.txt
 ```
 
 > **Note:** `--` marks the end of command-line options. Any argument following `--` is treated as search text, even if it begins with a hyphen (`-`).
 
+## Testing
+
+Tests are written with GoogleTest and can be run with CTest:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+## Development Roadmap
+
+### Completed
+
+* [x] Basic file reader
+* [x] Basic string search
+* [x] Command-line argument support
+* [x] Display file name and line number
+* [x] Argument validation
+* [x] Case-insensitive searching
+* [x] Multiple file support
+* [x] Support multiple command-line flags simultaneously
+* [x] Recursive directory searching
+* [x] Short combination flags, e.g. `-ilf`
+* [x] Regex support
+* [x] CMake setup
+* [x] GoogleTest integration
+* [x] Argument parsing unit tests
+* [x] Search unit tests
+
+### Planned
+
+* [ ] v0.1.0 release
+* [ ] Performance profiling
+* [ ] Search performance optimization
+* [ ] Multithreaded file searching
+* [ ] Continuous Integration with GitHub Actions
+
+## License
+
+SwiftGrep is licensed under the MIT License. See `LICENSE` for details.
