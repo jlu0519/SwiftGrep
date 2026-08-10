@@ -53,6 +53,7 @@ enable_testing()
 # Unit test executable
 add_executable(swiftgrep_tests
     tests/argument_parser_test.cpp
+    tests/search_test.cpp
 )
 
 target_link_libraries(

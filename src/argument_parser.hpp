@@ -34,5 +34,5 @@ struct SearchArguments
 
 SetFlags parseFlags(const std::vector<std::string>& commandArguments);
 
-SearchArguments parseSearchArguments(SetFlags userFlags, 
+SearchArguments parseSearchArguments(const SetFlags& userFlags, 
         const std::vector<std::string>& commandArguments);

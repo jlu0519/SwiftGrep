@@ -6,17 +6,42 @@
 
 namespace fs = std::filesystem;
 
-void search(const fs::path& path, const std::string& txt, const SetFlags& userFlags)
+void printMatchingText(const SetFlags& userFlags,const fs::path& path, const SearchMatch& searchMatch)
 {
-    int lineNumber = 1;
-    int countOfLineMatches{};
-    std::string line;
+    if(userFlags.lineNumbers && userFlags.showFile)
+    {
+        std::cout << path << ":" << searchMatch.lineNumber << ":" << searchMatch.line << "\n";
+    }
+    else if(userFlags.lineNumbers)
+    {
+        std::cout << searchMatch.lineNumber << ":" << searchMatch.line << "\n";
+    }
+    else if(userFlags.showFile)
+    {
+        std::cout << path << ":" << searchMatch.line << "\n";
+    }
+    else
+    {
+        std::cout << searchMatch.line << "\n";
+    }
+
+}
+
+void printCountOfMatches(const fs::path& path, const SearchMatch& searchMatch)
+{
+    std::cout << path << ":" <<  searchMatch.countOfLineMatches << "\n";
+}
+
+SearchMatch search(const fs::path& path, const std::string& txt, const SetFlags& userFlags)
+{
+    SearchMatch searchMatch;
+    searchMatch.lineNumber = {1};
     std::ifstream file(path);
 
     if(!file.is_open()) 
     {
-        std::cerr << "Error opening file " << path << "!" << "\n";
-        return;
+        searchMatch.searchError = SearchMatch::SearchError::fileNotOpen;
+        return searchMatch;
     }
     
     std::regex_constants::syntax_option_type regexOptions = 
@@ -33,73 +58,69 @@ void search(const fs::path& path, const std::string& txt, const SetFlags& userFl
         std::regex pattern{txt, regexOptions};
         
         // Process each line independently, determining whether it should be accepted based on active search flags.
-        while(std::getline(file, line))
+        while(std::getline(file, searchMatch.line))
         {
              
             // Determine whether the current line matches the search text
-            bool acceptedLine = std::regex_search(line, pattern);
+            searchMatch.acceptedLine = std::regex_search(searchMatch.line, pattern);
 
             // Reverse the match decision when invert mode is enabled.
             if(userFlags.invertMatch)
             {
-                acceptedLine = !acceptedLine;
+                searchMatch.acceptedLine = !searchMatch.acceptedLine;
             }
 
             // Accepted lines are either counted or formatted for output depending on the selected command-line flags.
-            if(acceptedLine)
+            if(searchMatch.acceptedLine)
             {
-                if(userFlags.countOnly)
+                ++searchMatch.countOfLineMatches;
+
+                if(!userFlags.countOnly)
                 {
-                    ++countOfLineMatches;
-                }
-                else
-                {
-                    if(userFlags.lineNumbers && userFlags.showFile)
-                    {
-                        std::cout << path << ":" << lineNumber << ":" << line << "\n";
-                    }
-                    else if(userFlags.lineNumbers)
-                    {
-                        std::cout << lineNumber << ":" << line << "\n";
-                    }
-                    else if(userFlags.showFile)
-                    {
-                        std::cout << path << ":" << line << "\n";
-                    }
-                    else
-                    {
-                        std::cout << line << "\n";
-                    }
+                    printMatchingText(userFlags, path, searchMatch);
                 }
             }
 
-            ++lineNumber;
+            ++searchMatch.lineNumber;
         }
     }
     catch(const std::regex_error& error)
     {
-        std::cerr << "Invalid regular expression: " << error.what() << '\n';
-        return;
+        searchMatch.searchError = SearchMatch::SearchError::invalidRegularExpression;
+        return searchMatch;
     }
     
     // Display the total number of accepted lines for this file.
     if(userFlags.countOnly)
     {
-        std::cout << path << ":" <<  countOfLineMatches << "\n";
+        printCountOfMatches(path, searchMatch);
     }
+    
+    // For Search Error State checking
+    return searchMatch;
 }
 
-void searchPaths(const SearchArguments& parsedSearchArguments, const SetFlags& userFlags)
+std::vector<PathInfo> searchPaths(const SearchArguments& parsedSearchArguments, const SetFlags& userFlags)
 {
+    SearchMatch searchMatch;
+    PathInfo pathInfo;
+    std::vector<PathInfo> allPathInfo;
+
     // Search each user-supplied path independently
     for(const auto& path : parsedSearchArguments.userPaths)
     {
+        pathInfo.path = path;
+        pathInfo.searchError = SearchMatch::SearchError::none;
+        pathInfo.pathTraversalError = PathInfo::PathTraversalError::none;
+
         // Enable recursive traversal when recursive search is requested
         if(userFlags.recursiveSearch)
         {
             if(fs::is_regular_file(path))
             {
-                search(path, parsedSearchArguments.searchTxt, userFlags);
+                searchMatch = search(path, parsedSearchArguments.searchTxt, userFlags);
+                pathInfo.searchError = searchMatch.searchError;
+                allPathInfo.push_back(pathInfo);
             }
             // Recursively search every regular file beneath the directory.
             else if(fs::is_directory(path))
@@ -110,14 +131,19 @@ void searchPaths(const SearchArguments& parsedSearchArguments, const SetFlags& u
 
                     if(fs::is_regular_file(childPath))
                     {
-                        search(childPath, parsedSearchArguments.searchTxt, userFlags);
+                        pathInfo.path = childPath;
+
+                        searchMatch = search(childPath, parsedSearchArguments.searchTxt, userFlags);
+                        pathInfo.searchError = searchMatch.searchError;
+                        allPathInfo.push_back(pathInfo);
                     }
                 }
             }
             // Report paths that are neither files nor directories
             else
             {
-                std::cerr << path << ": not a searchable file or directory" << "\n";
+                pathInfo.pathTraversalError = PathInfo::PathTraversalError::nonSearchablePath;
+                allPathInfo.push_back(pathInfo);
             }
         }
         else
@@ -125,17 +151,23 @@ void searchPaths(const SearchArguments& parsedSearchArguments, const SetFlags& u
             // Search a single file without recursion
             if(fs::is_regular_file(path))
             {
-                search(path, parsedSearchArguments.searchTxt, userFlags);
+                searchMatch = search(path, parsedSearchArguments.searchTxt, userFlags);
+                pathInfo.searchError = searchMatch.searchError;
+                allPathInfo.push_back(pathInfo);
             }
             else if(fs::is_directory(path))
             {
-                std::cerr << path <<": is a directory. Enter flag -r to search directories." << "\n";
+                pathInfo.pathTraversalError = PathInfo::PathTraversalError::noRecursiveFlagDirectory;
+                allPathInfo.push_back(pathInfo);
+
                 continue;
             }
             else
             {
-                std::cerr << path << ": not a searchable file or directory" << "\n";
+                pathInfo.pathTraversalError = PathInfo::PathTraversalError::nonSearchablePath;
+                allPathInfo.push_back(pathInfo);
             }
         }
     }
+    return allPathInfo;
 }

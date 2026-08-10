@@ -38,6 +38,7 @@
 
 # Out-of-source build directories
 build/
+build-release/
 cmake-build-*/
 
 # CMake-generated files
