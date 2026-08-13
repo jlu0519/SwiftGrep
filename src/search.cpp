@@ -3,8 +3,40 @@
 #include <fstream>
 #include <regex>
 #include <filesystem>
+#include <cctype>
 
 namespace fs = std::filesystem;
+
+std::string toLower(std::string text)
+{
+    for(auto& character : text)
+    {
+        character = static_cast<char>(
+            std::tolower(static_cast<unsigned char>(character))
+        );
+    }
+
+    return text;
+}
+
+SearchPattern checkSearchPattern(const std::string& text)
+{
+    SearchPattern searchPattern;
+
+    searchPattern.regexPattern = false;
+    searchPattern.searchPatternText = text;
+
+    std::string regexSpecificCharacters = R"(^$\.*+?()[]{}|)";
+
+
+    if(searchPattern.searchPatternText.find_first_of(regexSpecificCharacters)
+        != std::string::npos)
+    {
+        searchPattern.regexPattern = true;
+    }
+    
+    return searchPattern;
+}
 
 void printMatchingText(const SetFlags& userFlags,const fs::path& path, const SearchMatch& searchMatch)
 {
@@ -32,37 +64,74 @@ void printCountOfMatches(const fs::path& path, const SearchMatch& searchMatch)
     std::cout << path << ":" <<  searchMatch.countOfLineMatches << "\n";
 }
 
-SearchMatch search(const fs::path& path, const std::string& txt, const SetFlags& userFlags)
+SearchMatch search(const fs::path& path, const std::string& text, const SetFlags& userFlags)
 {
     SearchMatch searchMatch;
+    
     searchMatch.lineNumber = {1};
     std::ifstream file(path);
+    
+    // Checking if search pattern is regular string or regex pattern
+    SearchPattern searchPattern = checkSearchPattern(text);
 
     if(!file.is_open()) 
     {
         searchMatch.searchError = SearchMatch::SearchError::fileNotOpen;
         return searchMatch;
     }
+
+    // Regex initialization
     
     std::regex_constants::syntax_option_type regexOptions = 
         std::regex_constants::ECMAScript;
 
-    // Turn on case insensitive regex option
+    std::regex pattern;
+
+    // Turn on case insensitive regex option or convert normal string pattern to lowercase
     if(userFlags.caseInsensitive)
     {
-        regexOptions |= std::regex_constants::icase;
+        if(searchPattern.regexPattern)
+        {
+            regexOptions |= std::regex_constants::icase;
+        }
+        else
+        {
+            searchPattern.searchPatternText = toLower(searchPattern.searchPatternText);
+        }
+
     }
 
     try
     {
-        std::regex pattern{txt, regexOptions};
-        
+        // Does not process if not needed
+        if(searchPattern.regexPattern)
+        {
+            pattern = std::regex{searchPattern.searchPatternText, regexOptions};
+        }
+
         // Process each line independently, determining whether it should be accepted based on active search flags.
         while(std::getline(file, searchMatch.line))
         {
-             
+            std::string comparisonLine = searchMatch.line;
+
+            if(!searchPattern.regexPattern && userFlags.caseInsensitive)
+            {
+                comparisonLine = toLower(searchMatch.line);
+            }
+
             // Determine whether the current line matches the search text
-            searchMatch.acceptedLine = std::regex_search(searchMatch.line, pattern);
+            if(searchPattern.regexPattern)
+            {
+                searchMatch.acceptedLine = std::regex_search(comparisonLine, pattern);
+            }
+            else
+            {
+                searchMatch.acceptedLine =
+                    (comparisonLine.find(searchPattern.searchPatternText)
+                    != std::string::npos);
+
+            }
+
 
             // Reverse the match decision when invert mode is enabled.
             if(userFlags.invertMatch)
@@ -118,7 +187,7 @@ std::vector<PathInfo> searchPaths(const SearchArguments& parsedSearchArguments, 
         {
             if(fs::is_regular_file(path))
             {
-                searchMatch = search(path, parsedSearchArguments.searchTxt, userFlags);
+                searchMatch = search(path, parsedSearchArguments.searchtext, userFlags);
                 pathInfo.searchError = searchMatch.searchError;
                 allPathInfo.push_back(pathInfo);
             }
@@ -133,7 +202,7 @@ std::vector<PathInfo> searchPaths(const SearchArguments& parsedSearchArguments, 
                     {
                         pathInfo.path = childPath;
 
-                        searchMatch = search(childPath, parsedSearchArguments.searchTxt, userFlags);
+                        searchMatch = search(childPath, parsedSearchArguments.searchtext, userFlags);
                         pathInfo.searchError = searchMatch.searchError;
                         allPathInfo.push_back(pathInfo);
                     }
@@ -151,7 +220,7 @@ std::vector<PathInfo> searchPaths(const SearchArguments& parsedSearchArguments, 
             // Search a single file without recursion
             if(fs::is_regular_file(path))
             {
-                searchMatch = search(path, parsedSearchArguments.searchTxt, userFlags);
+                searchMatch = search(path, parsedSearchArguments.searchtext, userFlags);
                 pathInfo.searchError = searchMatch.searchError;
                 allPathInfo.push_back(pathInfo);
             }
