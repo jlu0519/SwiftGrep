@@ -135,12 +135,13 @@ ctest --test-dir build --output-on-failure
 * [x] Search unit tests
 * [x] v0.1.0 release
 * [x] Performance profiling
+* [x] Continuous Integration with GitHub Actions
 
 ### Planned
 
 * [ ] Search performance optimization
 * [ ] Multithreaded file searching
-* [ ] Continuous Integration with GitHub Actions
+
 
 ## License
 
