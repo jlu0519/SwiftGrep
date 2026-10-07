@@ -1,0 +1,48 @@
+# Continuous integration for SwiftGrep.
+# Builds the project and runs the test suite with GCC, Clang and MSVC
+# every time code is pushed to main or a pull request is opened.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:   # adds a "Run workflow" button on the Actions tab
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false   # let every compiler finish even if one fails
+      matrix:
+        include:
+          - name: Linux / GCC
+            os: ubuntu-latest
+            cmake_args: -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+
+          - name: Linux / Clang
+            os: ubuntu-latest
+            cmake_args: -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+
+          - name: Windows / MSVC
+            os: windows-latest
+            cmake_args: ""   # CMake selects Visual Studio's MSVC by default
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v5
+
+      - name: Show tool versions
+        run: cmake --version
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.cmake_args }}
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Test
+        run: ctest --test-dir build --build-config Release --output-on-failure
