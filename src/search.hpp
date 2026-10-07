@@ -28,10 +28,20 @@ struct PathInfo
     SearchMatch::SearchError searchError {SearchMatch::SearchError::none};
 };
 
+struct SearchPattern
+{
+    std::string searchPatternText;
+    bool regexPattern {false};
+};
+
+SearchPattern checkSearchPattern(const std::string& text);
+
+std::string toLower(std::string text);
+
 void printCountOfMatches(const fs::path& path, const SearchMatch& searchMatch);
 
 void printMatchingText(const SetFlags& userFlags,const fs::path& path, const SearchMatch& searchMatch);
 
-SearchMatch search(const fs::path& path, const std::string& txt, const SetFlags& userFlags);
+SearchMatch search(const fs::path& path, const std::string& text, const SetFlags& userFlags);
 
 std::vector<PathInfo> searchPaths(const SearchArguments& parsedSearchArguments, const SetFlags& userFlags);

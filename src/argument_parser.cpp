@@ -89,13 +89,13 @@ SearchArguments parseSearchArguments(const SetFlags& userFlags,
         const std::vector<std::string>& commandArguments)
 {
     SearchArguments userSearchArguments;
-    int searchTxtIndex {};
+    int searchtextIndex {};
     int pathStartIndex {};
     int numberOfArguments = static_cast<int>(commandArguments.size());
 
     // Determine the positions of the search text and first path
-    searchTxtIndex = userFlags.flagCommandArguments + 1;
-    pathStartIndex = searchTxtIndex + 1;
+    searchtextIndex = userFlags.flagCommandArguments + 1;
+    pathStartIndex = searchtextIndex + 1;
 
     // Input validation  
     if(numberOfArguments <= pathStartIndex)
@@ -107,7 +107,7 @@ SearchArguments parseSearchArguments(const SetFlags& userFlags,
     }
 
     // Search-text extraction
-    userSearchArguments.searchTxt = commandArguments[searchTxtIndex];
+    userSearchArguments.searchtext = commandArguments[searchtextIndex];
 
     // Collect all paths provided after search text.
     for(int i = pathStartIndex; i < numberOfArguments; ++i)

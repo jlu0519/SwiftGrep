@@ -134,10 +134,10 @@ ctest --test-dir build --output-on-failure
 * [x] Argument parsing unit tests
 * [x] Search unit tests
 * [x] v0.1.0 release
+* [x] Performance profiling
 
 ### Planned
 
-* [ ] Performance profiling
 * [ ] Search performance optimization
 * [ ] Multithreaded file searching
 * [ ] Continuous Integration with GitHub Actions

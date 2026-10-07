@@ -195,7 +195,7 @@ TEST(ParseSearchArgumentsTest, ParsesSearchTextAndSinglePath)
     // Bounds Check
     ASSERT_EQ(result.userPaths.size(), 1);
 
-    EXPECT_EQ(result.searchTxt, "hello");
+    EXPECT_EQ(result.searchtext, "hello");
     EXPECT_EQ(result.userPaths[0], fs::path{"README.md"});
     EXPECT_EQ(result.searchParseError, SearchArguments::SearchParseError::none);
 

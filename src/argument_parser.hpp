@@ -24,7 +24,7 @@ struct SetFlags
 
 struct SearchArguments
 {
-    std::string searchTxt;
+    std::string searchtext;
     std::vector<fs::path> userPaths; 
 
     enum  class SearchParseError{none,noPathProvided,noSearchPatternProvided};
